@@ -13,3 +13,26 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model Company {
+  id        String     @id @default(uuid())
+  name      String     @unique
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  responses Response[]
+
+  @@index([name])
+}
+
+model Response {
+  id        String   @id @default(uuid())
+  companyId String
+  stars     Int
+  comment   String?
+  createdAt DateTime @default(now())
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId, stars])
+  @@index([createdAt])
+}
