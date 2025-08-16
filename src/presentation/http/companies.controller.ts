@@ -7,10 +7,12 @@ import { CreateCompanyUseCase } from '@/domain/application/use-cases/create-comp
 @Controller('companies')
 export class CompaniesController {
   constructor(private readonly createCompany: CreateCompanyUseCase) {}
+
   @Post() create(@Body() dto: CreateCompanyDto) {
     return this.createCompany.execute({ name: dto.name });
   }
+
   @Get() findAll(@Param() _p: any) {
-    /* se quiser listar via use-case/port também */ return 'TODO: list via repo/uc';
+     return ''
   }
 }

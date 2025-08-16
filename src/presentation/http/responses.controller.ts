@@ -10,9 +10,11 @@ export class ResponsesController {
     private readonly createResponse: CreateResponseUseCase,
     private readonly listByCompany: ListCompanyResponsesUseCase,
   ) {}
+
   @Post() create(@Body() dto: CreateResponseDto) {
     return this.createResponse.execute(dto);
   }
+  
   @Get('company/:id') list(@Param('id') id: string) {
     return this.listByCompany.execute(id);
   }

@@ -8,9 +8,11 @@ export class ReportsController {
     private readonly allCompanies: ListAllCompaniesNpsUseCase,
     private readonly companyNps: GetCompanyNpsUseCase,
   ) {}
+
   @Get('nps') all() {
     return this.allCompanies.execute();
   }
+  
   @Get('nps/:companyId') byCompany(@Param('companyId') id: string) {
     return this.companyNps.execute(id);
   }
