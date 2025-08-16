@@ -1,5 +1,11 @@
-import { PrismaClient as PrismaCompany } from '@prisma/client';
 import { Company } from '@/domain/entities/company.entity';
 
-export const toDomainCompany = (c: PrismaCompany): Company =>
+type Row = {
+  id: string;
+  name: string;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export const toDomainCompany = (c: Row): Company =>
   new Company(c.id, c.name, c.createdAt, c.updatedAt);

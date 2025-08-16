@@ -14,7 +14,6 @@ import { ListAllCompaniesNpsUseCase } from '@/domain/application/use-cases/list-
 import { COMPANY_REPO_PROVIDER } from '../infra/database/prisma/repositories/company.prisma.repository';
 import { RESPONSE_REPO_PROVIDER } from '../infra/database/prisma/repositories/response.prisma.repository';
 import { NPS_REPORT_QUERY_PROVIDER } from '../infra/database/prisma/repositories/nps-report.prisma.query';
-import { PrismaClient } from '@prisma/client';
 
 @Module({
   imports: [
