@@ -1,0 +1,40 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: nps-report-pg
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: docker
+      POSTGRES_DB: nest-nps
+      PGDATA: /var/lib/postgresql/data
+    ports: ['51214:5432']
+    volumes: ['pgdata:/var/lib/postgresql/data']
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d nest-nps']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    image: node:20-alpine
+    container_name: nps-report-api
+    working_dir: /app
+    environment:
+      DATABASE_URL: postgresql://postgres:docker@db:5432/nest-nps
+      PORT: 3000
+    depends_on:
+      db:
+        condition: service_healthy
+    ports: ['3000:3000']
+    volumes:
+      - .:/app:delegated # monta só código
+      - /app/node_modules # volume anônimo -> NÃO sobrescrever node_modules gerado
+    command: >
+      sh -lc "
+        npm ci &&
+        npx prisma generate &&
+        npx prisma migrate dev --name init &&
+        npm run start:dev
+      "
+
+volumes: { pgdata: {} }

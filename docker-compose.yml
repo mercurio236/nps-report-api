@@ -1,14 +1,22 @@
-
+# docker-compose.yml
 services:
-  postgres:
+  db:
     container_name: nps-report-pg
-    image: postgres
+    image: postgres:16-alpine
     ports:
-      - 5432:5432
+      - "51214:5432"                 # externo 51214 -> interno 5432
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: docker
       POSTGRES_DB: nest-nps
-      PGDATA: /data/postgres
+      PGDATA: /var/lib/postgresql/data
     volumes:
-      - ./data:/bitnami/postgresql
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d nest-nps"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pgdata:
