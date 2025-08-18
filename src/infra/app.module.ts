@@ -16,6 +16,7 @@ import { RESPONSE_REPO_PROVIDER } from '../infra/database/prisma/repositories/re
 import { NPS_REPORT_QUERY_PROVIDER } from '../infra/database/prisma/repositories/nps-report.prisma.query';
 import { ListCompaniesUseCase } from '@/domain/application/use-cases/list-companies-usecase';
 import { GetCompanyByIdUseCase } from '@/domain/application/use-cases/get-company-by-id.usecase';
+import { NPS_REPORT_QUERY } from '@/domain/application/ports/nps-report.query';
 
 @Module({
   imports: [
@@ -38,7 +39,6 @@ import { GetCompanyByIdUseCase } from '@/domain/application/use-cases/get-compan
     COMPANY_REPO_PROVIDER,
     RESPONSE_REPO_PROVIDER,
     NPS_REPORT_QUERY_PROVIDER,
-    COMPANY_REPO_PROVIDER
   ],
 })
 export class AppModule {}

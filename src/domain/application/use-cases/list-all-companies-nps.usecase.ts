@@ -1,8 +1,14 @@
-import { Inject, Injectable } from '@nestjs/common'
-import { NPS_REPORT_QUERY, NpsReportQuery } from '../ports/nps-report.query'
+import {
+  CompanyNpsReport,
+  NPS_REPORT_QUERY,
+  NpsReportPrismaQuery,
+} from '@/infra/database/prisma/repositories/nps-report.prisma.query';
+import { Inject, Injectable } from '@nestjs/common';
 
 @Injectable()
 export class ListAllCompaniesNpsUseCase {
-  constructor(@Inject(NPS_REPORT_QUERY) private query: NpsReportQuery) {}
-  execute() { return this.query.allCompanies() }
+  constructor(@Inject(NPS_REPORT_QUERY) private query: NpsReportPrismaQuery) {}
+  execute(): Promise<CompanyNpsReport[]> {
+    return this.query.allCompanies();
+  }
 }
