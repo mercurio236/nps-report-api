@@ -35,6 +35,18 @@ $ pnpm install
 $ docker-compose up -d
 ```
 
+## Run prisma studio
+
+```bash 
+
+#Run migrations
+$ pnpm prisma migrate dev
+
+#Prisma studio
+$ pnpm prisma studio
+
+```
+
 ## Compile and run the project
 
 ```bash
@@ -47,6 +59,7 @@ $ pnpm run start:dev
 # production mode
 $ pnpm run start:prod
 ```
+
 
 ## License
 
