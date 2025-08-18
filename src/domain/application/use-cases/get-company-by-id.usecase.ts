@@ -7,8 +7,8 @@ export class GetCompanyByIdUseCase {
   constructor(@Inject(COMPANY_REPO) private companies: CompanyRepository) {}
 
   async execute(id: string): Promise<CompanyWithStarsRoundedDTO> {
-    const c = await this.companies.findOneWithAverageStars(id);
-    if (!c) throw new NotFoundException('Company not found');
-    return c;
+    const company = await this.companies.findOneWithAverageStars(id);
+    if (!company) throw new NotFoundException('Company not found');
+    return company;
   }
 }

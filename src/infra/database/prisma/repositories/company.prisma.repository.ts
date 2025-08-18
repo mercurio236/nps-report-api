@@ -6,8 +6,6 @@ import {
   CompanyRepository,
 } from '@/domain/application/ports/company.repository';
 import { CreateCompanyUseCaseProps } from '@/domain/application/use-cases/create-company.usecase';
-import { Prisma } from '@prisma/client';
-import { Company } from '@/domain/entities/company.entity';
 import { CompanyWithStarsRoundedDTO } from '@/domain/application/dto/company-with-stars-rounded.dto';
 
 @Injectable()
@@ -22,16 +20,16 @@ export class CompanyPrismaRepository implements CompanyRepository {
 
     if (exists) throw new ConflictException('Company name already exists');
 
-    const c = await this.prisma.company.create({
+    const companyData = await this.prisma.company.create({
       data: company,
     });
 
-    return toDomainCompany(c);
+    return toDomainCompany(companyData);
   }
 
   async findById(id: string) {
-    const c = await this.prisma.company.findUnique({ where: { id } });
-    return c ? toDomainCompany(c) : null;
+    const company = await this.prisma.company.findUnique({ where: { id } });
+    return company ? toDomainCompany(company) : null;
   }
 
   async findAll() {
@@ -80,11 +78,11 @@ export class CompanyPrismaRepository implements CompanyRepository {
   async findOneWithAverageStars(
     id: string,
   ): Promise<CompanyWithStarsRoundedDTO | null> {
-    const c = await this.prisma.company.findUnique({
+    const company = await this.prisma.company.findUnique({
       where: { id },
       select: { id: true, name: true, description: true },
     });
-    if (!c) return null;
+    if (!company) return null;
 
     const agg = await this.prisma.response.groupBy({
       by: ['companyId'],
@@ -94,9 +92,9 @@ export class CompanyPrismaRepository implements CompanyRepository {
     const avg = agg[0]?._avg.stars ?? null;
 
     return {
-      id: c.id,
-      name: c.name,
-      description: c.description ?? null,
+      id: company.id,
+      name: company.name,
+      description: company.description ?? null,
       starsRounded: avg == null ? 0 : Math.round(avg),
     };
   }

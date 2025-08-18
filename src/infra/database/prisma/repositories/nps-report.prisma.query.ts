@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
-import { computeNps5 } from '@/domain/services/nps.service';
-
+import { computeNpsFiveStars } from '@/domain/services/nps.service';
 
 export const NPS_REPORT_QUERY = Symbol('NPS_REPORT_QUERY');
 
@@ -9,11 +8,16 @@ export type CompanyNpsReport = {
   companyId: string;
   company: string;
   nps: number | null;
-  counts: { promoters: number; passives: number; detractors: number; total: number };
+  counts: {
+    promoters: number;
+    passives: number;
+    detractors: number;
+    total: number;
+  };
   pct: { promoters: number; passives: number; detractors: number };
-  averageStars: number | null;     // média real (0..5, com casas decimais)
-  starsRounded: number | null;     // média arredondada (exibição: 0..5 inteiro)
-  lastResponseAt: Date | null;     // data da última avaliação
+  averageStars: number | null; // média real (0..5, com casas decimais)
+  starsRounded: number | null; // média arredondada (exibição: 0..5 inteiro)
+  lastResponseAt: Date | null; // data da última avaliação
   comments: Array<{ comment: string; stars: number; createdAt: Date }>; // últimos N
 };
 
@@ -30,7 +34,7 @@ export class NpsReportPrismaQuery {
       orderBy: { name: 'asc' },
     });
 
-    const ids = companies.map(c => c.id);
+    const ids = companies.map((c) => c.id);
 
     if (ids.length === 0) return [];
 
@@ -43,44 +47,66 @@ export class NpsReportPrismaQuery {
       _max: { createdAt: true },
     });
     const aggByCompany = new Map(
-      aggs.map(a => [a.companyId, { total: a._count._all, avgStars: a._avg.stars ?? null, lastAt: a._max.createdAt ?? null }]),
+      aggs.map((a) => [
+        a.companyId,
+        {
+          total: a._count._all,
+          avgStars: a._avg.stars ?? null,
+          lastAt: a._max.createdAt ?? null,
+        },
+      ]),
     );
 
     // 3) estrelas para NPS
     const starsByCompany = await Promise.all(
-      companies.map(async c => {
+      companies.map(async (c) => {
         const rows = await this.prisma.response.findMany({
           where: { companyId: c.id },
           select: { stars: true },
         });
-        return [c.id, rows.map(r => r.stars)] as const;
+        return [c.id, rows.map((r) => r.stars)] as const;
       }),
     );
     const starsMap = new Map<string, number[]>(starsByCompany);
 
     // 4) últimos comentários (N por empresa)
     const commentsByCompany = await Promise.all(
-      companies.map(async c => {
+      companies.map(async (c) => {
         const rows = await this.prisma.response.findMany({
           where: { companyId: c.id, NOT: { comment: null } },
           select: { comment: true, stars: true, createdAt: true },
           orderBy: { createdAt: 'desc' },
           take: this.COMMENTS_PER_COMPANY,
         });
-        return [c.id, rows.map(r => ({ comment: r.comment as string, stars: r.stars, createdAt: r.createdAt }))] as const;
+        return [
+          c.id,
+          rows.map((r) => ({
+            comment: r.comment as string,
+            stars: r.stars,
+            createdAt: r.createdAt,
+          })),
+        ] as const;
       }),
     );
-    const commentsMap = new Map<string, Array<{ comment: string; stars: number; createdAt: Date }>>(commentsByCompany);
+    const commentsMap = new Map<
+      string,
+      Array<{ comment: string; stars: number; createdAt: Date }>
+    >(commentsByCompany);
 
     // 5) montar resultado final
-    const result: CompanyNpsReport[] = companies.map(c => {
-      const agg = aggByCompany.get(c.id) ?? { total: 0, avgStars: null, lastAt: null };
+    const result: CompanyNpsReport[] = companies.map((c) => {
+      const agg = aggByCompany.get(c.id) ?? {
+        total: 0,
+        avgStars: null,
+        lastAt: null,
+      };
       const stars = starsMap.get(c.id) ?? [];
       const lastResponseAt = agg.lastAt;
-      const averageStars = agg.avgStars; 
-      const starsRounded = averageStars == null ? null : Math.round(averageStars); 
+      const averageStars = agg.avgStars;
+      const starsRounded =
+        averageStars == null ? null : Math.round(averageStars);
 
-      const { nps, counts, pct } = computeNps5(stars);
+      const { nps, counts, pct } = computeNpsFiveStars(stars);
 
       return {
         companyId: c.id,
@@ -121,8 +147,8 @@ export class NpsReportPrismaQuery {
       where: { companyId },
       select: { stars: true },
     });
-    const stars = rows.map(r => r.stars);
-    const { nps, counts, pct } = computeNps5(stars);
+    const stars = rows.map((r) => r.stars);
+    const { nps, counts, pct } = computeNpsFiveStars(stars);
 
     const commentsRows = await this.prisma.response.findMany({
       where: { companyId, NOT: { comment: null } },
@@ -140,7 +166,11 @@ export class NpsReportPrismaQuery {
       averageStars: avgStars,
       starsRounded: avgStars == null ? null : Math.round(avgStars),
       lastResponseAt: lastAt,
-      comments: commentsRows.map(r => ({ comment: r.comment as string, stars: r.stars, createdAt: r.createdAt })),
+      comments: commentsRows.map((r) => ({
+        comment: r.comment as string,
+        stars: r.stars,
+        createdAt: r.createdAt,
+      })),
     };
   }
 }

@@ -17,7 +17,7 @@ export function classify(stars: number): 'promoter' | 'passive' | 'detractor' {
   return 'detractor';
 }
 
-export function computeNps5(samples: number[]): NpsResult {
+export function computeNpsFiveStars(samples: number[]): NpsResult {
   let p = 0,
     m = 0,
     d = 0;
